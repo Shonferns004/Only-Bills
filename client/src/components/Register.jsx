@@ -1,0 +1,115 @@
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { auth } from "../services/indesx";
+import { UserPlus } from "lucide-react";
+
+function Signup() {
+  const [name, setName] = useState();
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email || !password || !name) {
+      toast.error("Please fill all details !",{
+        position: 'top-center'
+      });
+      return;
+    }
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(async (userCredentials) => {
+        const user = userCredentials.user;
+        await updateProfile(user, {
+          displayName: name,
+        });
+        if (user) {
+          toast.success("You have been registered successfully",{
+            position: 'top-center'
+          });
+        }
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        if (errorCode === "auth/email-already-in-use") {
+          toast.error("Email already exists",{
+            position: 'top-center'
+          });
+        }
+      });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-2xl shadow-xl">
+        <div className="text-center">
+          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-orange-500">
+            <UserPlus className="h-8 w-8 text-white" />
+          </div>
+          <h2 className="mt-6 text-3xl font-extrabold text-white">Create Account</h2>
+          <p className="mt-2 text-sm text-gray-400">Sign up for a new account</p>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="sr-only">
+                Name
+              </label>
+              <input
+                name="name"
+                type="text"
+                placeholder="Name"
+                onChange={(e) => setName(e.target.value)}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-700 placeholder-gray-500 text-white rounded-xl bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email
+              </label>
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-700 placeholder-gray-500 text-white rounded-xl bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-700 placeholder-gray-500 text-white rounded-xl bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
+          >
+            Sign Up
+          </button>
+        </form>
+        <p className="mt-4 text-center text-sm text-gray-400">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-medium text-orange-500 hover:text-orange-400 transition-colors duration-200"
+          >
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default Signup;
