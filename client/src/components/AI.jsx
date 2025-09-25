@@ -38,7 +38,7 @@ const GeminiBot = () => {
   
     try {
       const response = await axios.post(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBSSF_mTx0BT5aStfrYmoy5AEFrk0sdZPc',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=YOUR_GEMINI_API_KEY',
         {
           contents: updatedMessages.map(m => ({
             role: m.role,
