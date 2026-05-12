@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from 'groq-sdk';
 
-
-
-const genAI = new GoogleGenerativeAI("AIzaSyBSSF_mTx0BT5aStfrYmoy5AEFrk0sdZPc"); 
+function getGroq() {
+  return new Groq({ apiKey: process.env.GROQ_API_KEY });
+}
 
 export function calculateBudget(data) {
     const income = parseFloat(data.income);
@@ -30,7 +30,6 @@ export function calculateBudget(data) {
       budget[category] = income * percent;
     }
   
-    // Override values if user has rent/vehicle
     if (hasRent) budget["Housing (Rent)"] = rentAmount;
     if (hasVehicle) budget["Transportation (Petrol)"] = petrolExpense;
   
@@ -38,9 +37,7 @@ export function calculateBudget(data) {
   }
 
 
-export async function getGeminiAdvice(income, numFamilyMembers, numChildren, maritalStatus, budget) {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-  
+export async function getGroqAdvice(income, numFamilyMembers, numChildren, maritalStatus, budget) {
     const budgetLines = Object.entries(budget)
       .map(([category, amount]) => `${category}: $${amount.toFixed(2)}`)
       .join('\n');
@@ -61,8 +58,10 @@ export async function getGeminiAdvice(income, numFamilyMembers, numChildren, mar
   - Be supportive, friendly, and practical.
   `;
   
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    return response.text();
+    const completion = await getGroq().chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+    });
+  
+    return completion.choices[0].message.content;
   }
-

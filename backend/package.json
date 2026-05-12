@@ -5,20 +5,19 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js"
+    "start": "nodemon app.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.49.4",
     "axios": "^1.8.4",
-    "backend": "file:",
-    "body-parser": "^2.2.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "mongoose": "^8.13.2",
+    "groq-sdk": "^0.14.0",
     "nodemon": "^3.1.9"
   }
 }

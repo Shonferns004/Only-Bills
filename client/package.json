@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "client": "file:",
-    "firebase": "^11.6.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "axios": "^1.16.0",
     "framer-motion": "^12.6.5",
     "lucide-react": "^0.488.0",
     "react": "^19.0.0",

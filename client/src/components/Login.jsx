@@ -1,46 +1,35 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../services/indesx";
 import { setLocalStorage } from "../services/Storage";
+import axios from "axios";
 import { toast } from "react-toastify";
 import { Smartphone } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
 function Login() {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(email);
     if (!email || !password) {
-      toast.error("Please fill all fields!",{
-        position: 'top-center'
-      });
+      toast.error("Please fill all fields!", { position: 'top-center' });
       return;
     }
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredentials) => {
-        const user = userCredentials.user;
-        setLocalStorage("userDetail", user);
-        if (user) {
-          toast.success("Logged in Successfully",{
-            position: 'top-center'
-          });
-          navigate("/home");
-        }
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        if (errorCode === "auth/invalid-credential") {
-          toast.error("Invalid credentials",{
-            position: 'top-center'
-          });
-        }
-      });
+
+    try {
+      const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+      const { user } = res.data;
+      setLocalStorage("userDetail", user);
+      toast.success("Logged in Successfully", { position: 'top-center' });
+      navigate("/home");
+    } catch (error) {
+      const msg = error.response?.data?.error || "Login failed";
+      toast.error(msg, { position: 'top-center' });
+    }
   };
 
   return (
@@ -56,9 +45,7 @@ function Login() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
+              <label htmlFor="email" className="sr-only">Email</label>
               <input
                 name="email"
                 type="email"
@@ -69,9 +56,7 @@ function Login() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <input
                 name="password"
                 type="password"
@@ -92,10 +77,7 @@ function Login() {
         </form>
         <p className="mt-4 text-center text-sm text-gray-400">
           Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="font-medium text-orange-500 hover:text-orange-400 transition-colors duration-200"
-          >
+          <Link to="/register" className="font-medium text-orange-500 hover:text-orange-400 transition-colors duration-200">
             Sign Up
           </Link>
         </p>

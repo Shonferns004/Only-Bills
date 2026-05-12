@@ -1,44 +1,36 @@
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { auth } from "../services/indesx";
+import axios from "axios";
 import { UserPlus } from "lucide-react";
 
-function Signup() {
-  const [name, setName] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-  const handleSubmit = (e) => {
+function Signup() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password || !name) {
-      toast.error("Please fill all details !",{
-        position: 'top-center'
-      });
+      toast.error("Please fill all details !", { position: 'top-center' });
       return;
     }
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(async (userCredentials) => {
-        const user = userCredentials.user;
-        await updateProfile(user, {
-          displayName: name,
-        });
-        if (user) {
-          toast.success("You have been registered successfully",{
-            position: 'top-center'
-          });
-        }
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        if (errorCode === "auth/email-already-in-use") {
-          toast.error("Email already exists",{
-            position: 'top-center'
-          });
-        }
+
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email,
+        password,
+        displayName: name,
       });
+      toast.success("You have been registered successfully", { position: 'top-center' });
+      navigate("/login");
+    } catch (error) {
+      const msg = error.response?.data?.error || "Registration failed";
+      toast.error(msg, { position: 'top-center' });
+    }
   };
 
   return (
@@ -54,39 +46,36 @@ function Signup() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="sr-only">
-                Name
-              </label>
+              <label htmlFor="name" className="sr-only">Name</label>
               <input
                 name="name"
                 type="text"
                 placeholder="Name"
                 onChange={(e) => setName(e.target.value)}
                 className="appearance-none relative block w-full px-4 py-3 border border-gray-700 placeholder-gray-500 text-white rounded-xl bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                required
               />
             </div>
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
+              <label htmlFor="email" className="sr-only">Email</label>
               <input
                 name="email"
                 type="email"
                 placeholder="Email"
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-4 py-3 border border-gray-700 placeholder-gray-500 text-white rounded-xl bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                required
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <input
                 name="password"
                 type="password"
                 placeholder="Password"
                 onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none relative block w-full px-4 py-3 border border-gray-700 placeholder-gray-500 text-white rounded-xl bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
+                required
               />
             </div>
           </div>
@@ -100,10 +89,7 @@ function Signup() {
         </form>
         <p className="mt-4 text-center text-sm text-gray-400">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-medium text-orange-500 hover:text-orange-400 transition-colors duration-200"
-          >
+          <Link to="/login" className="font-medium text-orange-500 hover:text-orange-400 transition-colors duration-200">
             Login
           </Link>
         </p>

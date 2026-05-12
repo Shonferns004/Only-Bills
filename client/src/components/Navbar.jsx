@@ -2,21 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, ReceiptIndianRupee, User, Home, LogOut, Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../services/indesx';
-import { deleteLocalStorage } from '../services/Storage';
+import { getLocalStorage, deleteLocalStorage } from '../services/Storage';
 
 const Navbar = ({ onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
 
-  // Firebase Authentication
-  const user = auth.currentUser;
+  useEffect(() => {
+    const stored = getLocalStorage('userDetail');
+    setUser(stored);
+  }, []);
 
-  // Get the initial from displayName or email
   const userInitial = user?.displayName
     ? user.displayName.charAt(0).toUpperCase()
-    : user?.email?.charAt(0).toUpperCase() || 'A';
+    : user?.email?.charAt(0).toUpperCase() || 'U';
 
   const userName = user?.displayName || 'User';
   const userEmail = user?.email || 'user@example.com';
@@ -32,14 +33,8 @@ const Navbar = ({ onMenuClick }) => {
   }, []);
 
   const iconMotion = {
-    hover: {
-      scale: 1.1,
-      transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
-    },
-    tap: {
-      scale: 0.95,
-      transition: { duration: 0.1, ease: [0.4, 0, 0.2, 1] }
-    }
+    hover: { scale: 1.1, transition: { duration: 0.2 } },
+    tap: { scale: 0.95, transition: { duration: 0.1 } }
   };
 
   return (
@@ -67,7 +62,7 @@ const Navbar = ({ onMenuClick }) => {
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: [0, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3, ease: [0.4, 0, 0.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
                   className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-orange-500 rounded-full"
                 />
               </motion.div>
@@ -106,7 +101,7 @@ const Navbar = ({ onMenuClick }) => {
                     initial={{ opacity: 0, scale: 0.95, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                    transition={{ duration: 0.3 }}
                     className="absolute right-0 mt-2 w-48 sm:w-56 bg-gray-800/90 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-xl overflow-hidden"
                   >
                     <div className="p-3 sm:p-4 text-gray-200 font-medium border-b border-gray-700 bg-gray-800/50">
@@ -131,8 +126,8 @@ const Navbar = ({ onMenuClick }) => {
                       </Link>
                       
                       <button
-                        onClick={async() => {
-                          await deleteLocalStorage();
+                        onClick={() => {
+                          deleteLocalStorage();
                           navigate('/login');
                         }}
                         className="w-full text-left flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-red-400 hover:bg-gray-700/50 rounded-xl transition-colors group"

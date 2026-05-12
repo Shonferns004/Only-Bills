@@ -51,7 +51,7 @@ function About() {
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Welcome to{' '}
-            <span className="bg-gradient-to-r from-orange-500 to-orange-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-teal-500 to-teal-300 bg-clip-text text-transparent">
               OnlyBills
             </span>
           </h1>
