@@ -4,7 +4,7 @@ import { setLocalStorage } from "../services/Storage";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 function Login() {
   const [email, setEmail] = useState('');

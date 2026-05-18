@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { getLocalStorage } from '../services/Storage';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 function Dashboard() {
   const [userName, setUserName] = useState('');

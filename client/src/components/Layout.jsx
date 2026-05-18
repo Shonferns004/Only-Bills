@@ -3,7 +3,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getLocalStorage, deleteLocalStorage } from '../services/Storage';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 const sidebarLinks = [
   { icon: 'dashboard', label: 'Dashboard', path: '/home' },
