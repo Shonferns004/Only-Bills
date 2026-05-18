@@ -1,91 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Printer, Loader2 } from 'lucide-react';
+import { getLocalStorage } from '../services/Storage';
 
-function CustomDropdown({ value, onChange, options, placeholder, required }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectedOption = options.find(option => option.value === value);
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-gray-800 text-left text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors ${
-          !value && 'text-gray-400'
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <span>{selectedOption ? selectedOption.label : placeholder}</span>
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown size={20} />
-          </motion.div>
-        </div>
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden"
-          >
-            {options.map((option) => (
-              <motion.button
-                key={option.value}
-                type="button"
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`w-full px-4 py-2.5 text-left transition-colors ${
-                  option.value === value
-                    ? 'bg-orange-600/20 text-orange-500'
-                    : 'text-white hover:bg-gray-700'
-                }`}
-              >
-                {option.label}
-              </motion.button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {required && (
-        <input
-          type="text"
-          tabIndex={-1}
-          value={value}
-          required
-          className="sr-only"
-          aria-hidden="true"
-        />
-      )}
-    </div>
-  );
-}
-
-function App() {
+function Planner() {
   const [income, setIncome] = useState('');
   const [numFamilyMembers, setNumFamilyMembers] = useState('');
   const [maritalStatus, setMaritalStatus] = useState('');
@@ -96,14 +15,41 @@ function App() {
   const [petrolExpense, setPetrolExpense] = useState('');
   const [result, setResult] = useState(null);
   const [showForm, setShowForm] = useState(true);
-  const [expandedSection, setExpandedSection] = useState('budget');
   const [isLoading, setIsLoading] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const user = getLocalStorage('userDetail');
+  const userId = user?.id;
+
+  useEffect(() => {
+    if (!userId) return;
+    setLoadingHistory(true);
+    axios.get(`${API_URL}/api/data/plans`, { params: { userId } })
+      .then(r => {
+        setHistory(r.data);
+        if (r.data.length > 0 && !result) {
+          const latest = r.data[0];
+          setIncome(String(latest.income));
+          setNumFamilyMembers(String(latest.num_family_members));
+          setMaritalStatus(latest.marital_status);
+          setNumChildren(String(latest.num_children || 0));
+          setHasRent(latest.has_rent || 'no');
+          setRentAmount(String(latest.rent_amount || 0));
+          setHasVehicle(latest.has_vehicle || 'no');
+          setPetrolExpense(String(latest.petrol_expense || 0));
+          try {
+            const budget = typeof latest.budget_json === 'string' ? JSON.parse(latest.budget_json) : latest.budget_json;
+            setResult({ budget, gemini_advice: latest.advice, income: latest.income });
+          } catch {}
+          setShowForm(false);
+        }
+      }).catch(console.error)
+      .finally(() => setLoadingHistory(false));
+  }, [userId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-
     const data = {
       income: parseFloat(income),
       num_family_members: parseInt(numFamilyMembers),
@@ -114,445 +60,258 @@ function App() {
       has_vehicle: hasVehicle,
       petrol_expense: parseFloat(petrolExpense),
     };
-
     try {
-      const response = await axios.post('https://onlybills-1.onrender.com/api/budget', data);
+      const response = await axios.post(`${API_URL}/api/budget`, data);
       setResult(response.data);
       setShowForm(false);
+      if (userId) {
+        await axios.post(`${API_URL}/api/data/plans`, {
+          userId, income: data.income, numFamilyMembers: data.num_family_members,
+          maritalStatus, numChildren: data.num_children, hasRent, rentAmount: data.rent_amount,
+          hasVehicle, petrolExpense: data.petrol_expense,
+          budgetJson: JSON.stringify(response.data.budget), advice: response.data.gemini_advice,
+        });
+        const upd = await axios.get(`${API_URL}/api/data/plans`, { params: { userId } });
+        setHistory(upd.data);
+      }
     } catch (error) {
-      console.error('Error fetching budget advice:', error);
-      setResult({ error: 'Failed to fetch budget advice' });
-    } finally {
-      setIsLoading(false);
+      console.error('Budget plan save failed:', error?.response?.data || error.message);
     }
+    setIsLoading(false);
   };
 
+  const incomeVal = parseFloat(income) || 0;
+  const rentVal = parseFloat(rentAmount) || 0;
+  const petrolVal = parseFloat(petrolExpense) || 0;
+  const totalSpent = rentVal + petrolVal;
+  const remaining = incomeVal - totalSpent;
 
-  const formatGeminiText = (text) => {
-    if (!text) return "";
-  
-    return text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // bold
-      .replace(/\*(.*?)\*/g, "<li>$1</li>") // convert bullet points
-      .replace(/\n{2,}/g, "<br/><br/>") // multiple line breaks
-      .replace(/\n/g, "<br/>")
-      .replace(/^\s*\*\s?/gm, "") // remove leading asterisks and spaces from each line
-      .replace(/\n/g, "<br/>") // single line breaks
-      .replace(/\n\s*\*\s(.*?)(?=\n|$)/g, "<li>$1</li>") // single line breaks
+  const iconMap = {
+    'Housing (Rent)': 'home',
+    'Food': 'restaurant',
+    'Children': 'child_care',
+    'Transportation (Petrol)': 'directions_car',
+    'Utilities (Electricity, Water, Gas)': 'bolt',
+    'Savings & Investments': 'savings',
+    'Entertainment & Leisure': 'celebration',
+    'Miscellaneous': 'more_horiz',
   };
-  
-  
-
-  const handleReset = () => {
-    setShowForm(true);
-    setResult(null);
-    setExpandedSection('budget');
+  const colorMap = {
+    'Housing (Rent)': 'bg-primary',
+    'Food': 'bg-secondary',
+    'Children': 'bg-tertiary-fixed-dim',
+    'Transportation (Petrol)': 'bg-surface-dim',
+    'Utilities (Electricity, Water, Gas)': 'bg-primary',
+    'Savings & Investments': 'bg-secondary',
+    'Entertainment & Leisure': 'bg-error',
+    'Miscellaneous': 'bg-outline-variant',
   };
-
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const html = `
-      <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Budget Analysis Report</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 30px;
-        background: linear-gradient(to right, #f1f1f1, #e6f0ff);
-      }
-
-      h1 {
-        color: #2c3e50;
-        text-align: center;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #3498db;
-        font-size: 2.5em;
-      }
-
-      h2 {
-        color: #2c3e50;
-        margin-top: 30px;
-        font-size: 1.8em;
-      }
-
-      .section {
-        margin: 30px 0;
-        padding: 25px;
-        background: #ffffff;
-        border-left: 5px solid #3498db;
-        border-radius: 10px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-      }
-
-      .info-item {
-        padding: 15px;
-        background: #f4faff;
-        border-left: 4px solid #2980b9;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease;
-      }
-
-      .info-item:hover {
-        transform: translateY(-3px);
-      }
-
-      .label {
-        font-weight: 600;
-        color: #555;
-        margin-bottom: 5px;
-        display: block;
-      }
-
-      pre {
-        border-radius: 8px;
-        padding: 15px;
-        overflow-x: auto;
-        white-space: pre-wrap;
-        font-family: 'Courier New', Courier, monospace;
-        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-      }
-
-      @media print {
-        body {
-          print-color-adjust: exact;
-          -webkit-print-color-adjust: exact;
-        }
-
-        .section {
-          break-inside: avoid;
-        }
-
-        .info-item {
-          box-shadow: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Budget Analysis Report</h1>
-
-    <div class="section">
-      <h2>Input Information</h2>
-      <div class="info-grid">
-        <div class="info-item">
-          <div class="label">Monthly Income:</div>
-          ${income}
-        </div>
-        <div class="info-item">
-          <div class="label">Family Members:</div>
-          ${numFamilyMembers}
-        </div>
-        <div class="info-item">
-          <div class="label">Marital Status:</div>
-          ${maritalStatus.charAt(0).toUpperCase() + maritalStatus.slice(1)}
-        </div>
-        ${maritalStatus === 'married' ? `
-        <div class="info-item">
-          <div class="label">Number of Children:</div>
-          ${numChildren}
-        </div>` : ''}
-        <div class="info-item">
-          <div class="label">Paying Rent:</div>
-          ${hasRent === 'yes' ? `Yes (${rentAmount})` : 'No'}
-        </div>
-        <div class="info-item">
-          <div class="label">Has Vehicle:</div>
-          ${hasVehicle === 'yes' ? `Yes (Petrol: ${petrolExpense})` : 'No'}
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Budget Breakdown</h2>
-      <pre>
-${JSON.stringify(result.budget, null, 2)}
-      </pre>
-    </div>
-
-    <div class="section">
-      <h2>Financial Advice</h2>
-      <pre>
-      ${formatGeminiText(result?.gemini_advice)}
-      </pre>
-    </div>
-  </body>
-</html>
-    `;
-
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.print();
-    };
-  };
-
-  const inputClasses = "w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors";
-  const labelClasses = "block text-gray-300 text-sm font-medium mb-2";
-
-  const maritalStatusOptions = [
-    { value: 'single', label: 'Single' },
-    { value: 'married', label: 'Married' },
-    { value: 'divorced', label: 'Divorced' },
-    { value: 'widowed', label: 'Widowed' },
-  ];
-
-  const yesNoOptions = [
-    { value: 'yes', label: 'Yes' },
-    { value: 'no', label: 'No' },
-  ];
+  const categories = result?.budget && typeof result.budget === 'object'
+    ? Object.entries(result.budget).map(([name, amount]) => ({
+        name,
+        icon: iconMap[name] || 'receipt',
+        spent: Number(amount),
+        goal: Number(amount),
+        color: colorMap[name] || 'bg-primary',
+      }))
+    : [
+      { name: 'Housing (Rent)', icon: 'home', spent: 1450, goal: 1500, color: 'bg-primary' },
+      { name: 'Food', icon: 'restaurant', spent: 420, goal: 800, color: 'bg-secondary' },
+      { name: 'Utilities', icon: 'bolt', spent: 210, goal: 350, color: 'bg-primary' },
+      { name: 'Entertainment & Leisure', icon: 'celebration', spent: 580, goal: 600, color: 'bg-error' },
+    ];
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <AnimatePresence mode="wait">
-          {showForm ? (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-xl p-6 sm:p-8"
-            >
-              <h1 className="text-3xl font-bold text-white mb-8 text-center">Budget Planner</h1>
-              
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                  {/* Left Column */}
-                  <div className="space-y-6">
-                    <div>
-                      <label className={labelClasses}>
-                        Monthly Income
-                        <input
-                          type="number"
-                          value={income}
-                          onChange={(e) => setIncome(e.target.value)}
-                          required
-                          className={inputClasses}
-                          placeholder="Enter amount"
-                        />
-                      </label>
-                    </div>
-                    
-                    <div>
-                      <label className={labelClasses}>
-                        Number of Family Members
-                        <input
-                          type="number"
-                          value={numFamilyMembers}
-                          onChange={(e) => setNumFamilyMembers(e.target.value)}
-                          required
-                          className={inputClasses}
-                          placeholder="Enter number"
-                        />
-                      </label>
-                    </div>
-
-                    <div>
-                      <label className={labelClasses}>
-                        Marital Status
-                        <CustomDropdown
-                          value={maritalStatus}
-                          onChange={setMaritalStatus}
-                          options={maritalStatusOptions}
-                          placeholder="Select status"
-                          required
-                        />
-                      </label>
-                    </div>
-
-                    {maritalStatus === 'married' && (
-                      <div>
-                        <label className={labelClasses}>
-                          Number of Children
-                          <input
-                            type="number"
-                            value={numChildren}
-                            onChange={(e) => setNumChildren(e.target.value)}
-                            className={inputClasses}
-                            placeholder="Enter number"
-                          />
-                        </label>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column */}
-                  <div className="space-y-6">
-                    <div>
-                      <label className={labelClasses}>
-                        Do you pay rent?
-                        <CustomDropdown
-                          value={hasRent}
-                          onChange={setHasRent}
-                          options={yesNoOptions}
-                          placeholder="Select option"
-                          required
-                        />
-                      </label>
-                    </div>
-
-                    {hasRent === 'yes' && (
-                      <div>
-                        <label className={labelClasses}>
-                          Rent Amount
-                          <input
-                            type="number"
-                            value={rentAmount}
-                            onChange={(e) => setRentAmount(e.target.value)}
-                            required
-                            className={inputClasses}
-                            placeholder="Enter amount"
-                          />
-                        </label>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className={labelClasses}>
-                        Do you have a vehicle?
-                        <CustomDropdown
-                          value={hasVehicle}
-                          onChange={setHasVehicle}
-                          options={yesNoOptions}
-                          placeholder="Select option"
-                          required
-                        />
-                      </label>
-                    </div>
-
-                    {hasVehicle === 'yes' && (
-                      <div>
-                        <label className={labelClasses}>
-                          Petrol Expense
-                          <input
-                            type="number"
-                            value={petrolExpense}
-                            onChange={(e) => setPetrolExpense(e.target.value)}
-                            required
-                            className={inputClasses}
-                            placeholder="Enter amount"
-                          />
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-orange-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Generating Budget Plan...</span>
-                      </>
-                    ) : (
-                      'Generate Budget Plan'
-                    )}
-                  </motion.button>
-                </div>
-              </form>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="result"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-xl p-6 sm:p-8"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleReset}
-                    className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-                  >
-                    <ArrowLeft size={20} />
-                    <span>Back to Form</span>
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handlePrint}
-                    className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-                  >
-                    <Printer size={20} />
-                    <span>Print Report</span>
-                  </motion.button>
-                </div>
-                <h2 className="text-2xl font-bold text-white">Your Budget Analysis</h2>
+    <div className="p-gutter max-w-container-max mx-auto w-full flex-1">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-xl">
+        <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-md border border-outline-variant card-shadow flex flex-col justify-between relative overflow-hidden">
+          <div className="z-10">
+            <p className="text-label-md font-label-md text-on-surface-variant mb-xs">TOTAL REMAINING</p>
+            <h3 className="text-headline-lg font-headline-lg text-primary">
+              ₹{showForm ? '---' : (remaining > 0 ? remaining.toFixed(2) : '0.00')}
+            </h3>
+            <p className="text-body-sm font-body-sm text-secondary flex items-center gap-1 mt-2">
+              <span className="material-symbols-outlined text-[16px]">trending_up</span>
+              On track to save more than last month
+            </p>
+          </div>
+          {!showForm && result && (
+            <div className="mt-lg flex gap-md items-end z-10">
+              <div>
+                <p className="text-label-sm font-label-sm text-on-surface-variant">Budgeted</p>
+                <p className="text-headline-sm font-headline-sm">₹{incomeVal.toFixed(2)}</p>
               </div>
-
-              <div className="space-y-6">
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <button
-                    onClick={() => setExpandedSection('budget')}
-                    className={`w-full px-6 py-4 text-left flex items-center justify-between ${
-                      expandedSection === 'budget' ? 'bg-gray-700' : ''
-                    }`}
-                  >
-                    <h3 className="text-xl font-semibold text-white">Budget Breakdown</h3>
-                    <span className="text-gray-400">{expandedSection === 'budget' ? '−' : '+'}</span>
-                  </button>
-                  {expandedSection === 'budget' && (
-                    <div className="p-6 bg-gray-900">
-                      <pre className="text-gray-300 whitespace-pre-wrap overflow-x-auto">
-                        {JSON.stringify(result.budget, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <button
-                    onClick={() => setExpandedSection('advice')}
-                    className={`w-full px-6 py-4 text-left flex items-center justify-between ${
-                      expandedSection === 'advice' ? 'bg-gray-700' : ''
-                    }`}
-                  >
-                    <h3 className="text-xl font-semibold text-white">Financial Advice</h3>
-                    <span className="text-gray-400">{expandedSection === 'advice' ? '−' : '+'}</span>
-                  </button>
-                  {expandedSection === 'advice' && (
-                    <div className="p-6 bg-gray-900">
-                      <pre dangerouslySetInnerHTML={{
-            __html: formatGeminiText(result?.gemini_advice)
-          }} className="text-gray-300 whitespace-pre-wrap overflow-x-auto">
-                      </pre>
-                    </div>
-                  )}
-                </div>
+              <div className="h-10 w-[1px] bg-outline-variant mb-1" />
+              <div>
+                <p className="text-label-sm font-label-sm text-on-surface-variant">Spent</p>
+                <p className="text-headline-sm font-headline-sm text-on-surface">₹{totalSpent.toFixed(2)}</p>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+          <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+            <span className="material-symbols-outlined text-[180px]">account_balance_wallet</span>
+          </div>
+        </div>
+
+        <div className="md:col-span-4 glass-panel rounded-xl p-md flex flex-col items-center justify-center text-center gap-base card-shadow border-primary/10">
+          <div className="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center mb-base">
+            <span className="material-symbols-outlined fill">smart_toy</span>
+          </div>
+          <h4 className="text-headline-sm font-headline-sm">Ask Billy</h4>
+          <p className="text-body-sm font-body-sm text-on-surface-variant px-base">&ldquo;Can I afford a new desk this month?&rdquo;</p>
+          <button className="mt-base bg-primary text-on-primary px-lg py-sm rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity active:scale-95">Chat Now</button>
+        </div>
       </div>
+
+      {showForm ? (
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md card-shadow max-w-2xl mx-auto">
+          <h3 className="text-headline-sm font-headline-sm mb-md">Budget Information</h3>
+          <form onSubmit={handleSubmit} className="space-y-md">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+              <div className="space-y-xs">
+                <label className="text-label-md font-label-md text-on-surface-variant block">Monthly Income (₹)</label>
+                <input className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" type="number" value={income} onChange={(e) => setIncome(e.target.value)} required />
+              </div>
+              <div className="space-y-xs">
+                <label className="text-label-md font-label-md text-on-surface-variant block">Family Members</label>
+                <input className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" type="number" value={numFamilyMembers} onChange={(e) => setNumFamilyMembers(e.target.value)} required />
+              </div>
+              <div className="space-y-xs">
+                <label className="text-label-md font-label-md text-on-surface-variant block">Marital Status</label>
+                <select className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" value={maritalStatus} onChange={(e) => setMaritalStatus(e.target.value)} required>
+                  <option value="">Select</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                </select>
+              </div>
+              <div className="space-y-xs">
+                <label className="text-label-md font-label-md text-on-surface-variant block">Number of Children</label>
+                <input className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" type="number" value={numChildren} onChange={(e) => setNumChildren(e.target.value)} required />
+              </div>
+              <div className="space-y-xs">
+                <label className="text-label-md font-label-md text-on-surface-variant block">Have Rent?</label>
+                <select className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" value={hasRent} onChange={(e) => setHasRent(e.target.value)} required>
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              {hasRent === 'yes' && (
+                <div className="space-y-xs">
+                  <label className="text-label-md font-label-md text-on-surface-variant block">Rent Amount (₹)</label>
+                  <input className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" type="number" value={rentAmount} onChange={(e) => setRentAmount(e.target.value)} />
+                </div>
+              )}
+              <div className="space-y-xs">
+                <label className="text-label-md font-label-md text-on-surface-variant block">Have Vehicle?</label>
+                <select className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" value={hasVehicle} onChange={(e) => setHasVehicle(e.target.value)} required>
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              {hasVehicle === 'yes' && (
+                <div className="space-y-xs">
+                  <label className="text-label-md font-label-md text-on-surface-variant block">Monthly Fuel (₹)</label>
+                  <input className="w-full bg-surface border border-outline-variant rounded-lg p-sm focus:border-primary focus:ring-1 focus:ring-primary" type="number" value={petrolExpense} onChange={(e) => setPetrolExpense(e.target.value)} />
+                </div>
+              )}
+            </div>
+            <button type="submit" disabled={isLoading} className="w-full bg-primary text-on-primary py-md rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
+              {isLoading ? 'Calculating...' : 'Generate Budget Plan'}
+            </button>
+          </form>
+        </div>
+      ) : result && (
+        <>
+          <div className="flex justify-between items-center mb-md">
+            <h3 className="text-headline-md font-headline-md">Budget Categories</h3>
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-xs text-primary font-label-md text-label-md border border-primary px-md py-sm rounded-lg hover:bg-primary hover:text-on-primary transition-all active:scale-95">
+              <span className="material-symbols-outlined text-[18px]">edit</span>
+              Edit
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+            {categories.map((cat) => (
+              <div key={cat.name} className="bg-surface-container-lowest p-md rounded-xl border border-outline-variant card-shadow">
+                <div className="flex justify-between items-start mb-md">
+                  <div className="p-base bg-surface-container-high rounded-lg">
+                    <span className="material-symbols-outlined text-primary">{cat.icon}</span>
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">more_vert</span>
+                </div>
+                <h4 className="font-headline-sm text-headline-sm mb-xs">{cat.name}</h4>
+                <div className="flex justify-between text-label-sm font-label-sm text-on-surface-variant mb-base">
+                  <span>Spent: ₹{cat.spent}</span>
+                  <span>Goal: ₹{cat.goal}</span>
+                </div>
+                <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-sm">
+                  <div className={`${cat.color} h-full`} style={{ width: `${Math.min(100, (cat.spent / cat.goal) * 100)}%` }} />
+                </div>
+                <p className={`text-label-sm font-label-sm flex items-center gap-1 ${cat.spent > cat.goal ? 'text-error' : 'text-secondary'}`}>
+                  <span className="material-symbols-outlined text-[14px]">{cat.spent > cat.goal ? 'warning' : 'check_circle'}</span>
+                  {cat.spent > cat.goal ? `${Math.round((cat.spent / cat.goal) * 100)}% of limit reached` : 'Healthy margin'}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-xl grid grid-cols-1 md:grid-cols-2 gap-gutter">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-md card-shadow">
+              <h4 className="text-headline-sm font-headline-sm mb-md">Spending Trends</h4>
+              <div className="aspect-video w-full bg-surface-container-low rounded-lg flex items-end justify-between p-md overflow-hidden relative">
+                {[40, 55, 45, 75, 60, 85, 65].map((h, i) => (
+                  <div key={i} className={`w-8 rounded-t-lg ${i === 3 || i === 5 ? 'bg-secondary' : 'bg-primary'}`} style={{ height: `${h}%` }} />
+                ))}
+                <div className="absolute inset-0 border-b border-outline-variant/30 flex flex-col justify-between pointer-events-none p-md">
+                  <div className="border-t border-outline-variant/20 w-full h-0" />
+                  <div className="border-t border-outline-variant/20 w-full h-0" />
+                  <div className="border-t border-outline-variant/20 w-full h-0" />
+                </div>
+              </div>
+              <div className="mt-md flex justify-between text-label-sm font-label-sm text-on-surface-variant">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+            </div>
+
+            <div className="bg-primary-container text-on-primary rounded-xl p-md flex flex-col justify-between card-shadow">
+              <div>
+                <h4 className="text-headline-sm font-headline-sm text-white mb-base">Smart Insight</h4>
+                <p className="text-body-md font-body-md text-on-primary-container mb-md leading-relaxed">
+                  Based on your current spending pace, you will have <span className="text-secondary-fixed font-bold">₹{Math.max(0, remaining).toFixed(2)}</span> available for your savings goal by the end of the month.
+                </p>
+              </div>
+              {result?.gemini_advice && (
+                <div className="p-md bg-white/5 rounded-lg border border-white/10">
+                  <div className="flex items-center gap-sm mb-base">
+                    <span className="material-symbols-outlined text-secondary-fixed">lightbulb</span>
+                    <p className="text-label-md font-label-md text-white">Suggested Action</p>
+                  </div>
+                  <p className="text-body-sm font-body-sm text-on-primary-container">{result.gemini_advice}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {history.length > 0 && (
+            <div className="mt-xl bg-surface-container-lowest border border-outline-variant rounded-xl p-md card-shadow">
+              <h3 className="text-headline-sm font-headline-sm mb-md">Budget History</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {history.slice(-3).reverse().map((p) => (
+                  <div key={p.id} className="bg-surface-container-low rounded-lg p-md border border-outline-variant">
+                    <p className="font-bold text-headline-sm text-primary">₹{Number(p.income).toFixed(2)}</p>
+                    <p className="text-body-sm font-body-sm text-on-surface-variant">{p.marital_status}, {p.num_family_members} members</p>
+                    <p className="text-label-sm font-label-sm text-outline">{new Date(p.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-export default App;
+export default Planner;

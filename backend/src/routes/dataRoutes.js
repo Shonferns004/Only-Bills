@@ -4,7 +4,7 @@ import {
   getPredictions, savePrediction, deletePrediction,
   getBillSplits, saveBillSplit, deleteBillSplit,
   getChatHistory, saveChatMessage, clearChatHistory,
-  getTransactions, saveTransaction
+  getTransactions, saveTransaction, deleteTransaction
 } from '../controller/dataController.js';
 
 const router = Router();
@@ -27,5 +27,6 @@ router.delete('/chat/history', clearChatHistory);
 
 router.get('/transactions', getTransactions);
 router.post('/transactions', saveTransaction);
+router.delete('/transactions/:id', deleteTransaction);
 
 export default router;

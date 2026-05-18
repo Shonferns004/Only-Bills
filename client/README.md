@@ -1,12 +1,51 @@
-# React + Vite
+# Only Bills — Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the Only Bills personal finance app.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19** + **Vite 6**
+- **Tailwind CSS 3** with custom Material Design tokens
+- **React Router v7** for routing
+- **Axios** for API calls
+- **react-toastify** for notifications
+- **Supabase JS** (client-side, for anon access)
 
-## Expanding the ESLint configuration
+## Pages
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/login` | Login | Sign in with email/password |
+| `/register` | Register | Create a new account |
+| `/home` | Dashboard | Financial overview — summary cards, spending trends chart, recent transactions, budget snapshot, recent splits |
+| `/transactions` | Transactions | Add/view/delete income & expense entries |
+| `/elec` | Predict | Electricity bill predictor with ML model |
+| `/plan` | Planner | Budget planner with AI-generated advice |
+| `/split` | Splitter | Bill split calculator with INR default |
+| `/about` | About | App info and team |
+
+## Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server (default: http://localhost:5173)
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Environment
+
+Create `client/.env`:
+
+```
+VITE_API_URL=http://localhost:4000
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```

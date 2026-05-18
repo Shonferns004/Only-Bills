@@ -1,199 +1,113 @@
-import React from 'react';
-import { 
-  Bot, 
-  Wallet, 
-  Zap, 
-  Users, 
-  PieChart, 
-  ArrowRight, 
-  Shield, 
-  Clock,
-  Github,
-  Twitter,
-  Linkedin,
-  Mail
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-
-function FeatureCard({ icon: Icon, title, description }) {
-  return (
-    <motion.div 
-      whileHover={{ scale: 1.02 }}
-      className="bg-gray-800/40 rounded-xl p-6 border border-gray-700/30"
-    >
-      <div className="p-3 bg-orange-500/10 rounded-xl inline-block mb-4">
-        <Icon className="h-6 w-6 text-orange-500" />
-      </div>
-      <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
-      <p className="text-gray-400">{description}</p>
-    </motion.div>
-  );
-}
-
-function StatCard({ number, label }) {
-  return (
-    <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-700/30 text-center">
-      <p className="text-3xl font-bold text-orange-500 mb-2">{number}</p>
-      <p className="text-gray-400">{label}</p>
-    </div>
-  );
-}
-
 function About() {
+  const features = [
+    { icon: 'auto_awesome', title: 'AI-Powered Insights', description: 'Our "Billy" AI assistant analyzes your spending patterns to predict future obligations and suggest optimizations.' },
+    { icon: 'security', title: 'Bank-Grade Security', description: 'Your financial data is protected by industry-leading 256-bit encryption and multi-factor authentication protocols.' },
+    { icon: 'group_add', title: 'Effortless Splitting', description: 'Share bills with housemates or partners instantly. No more awkward spreadsheets or manual calculations.' },
+  ];
+
+  const team = [
+    { name: 'Jordan Vance', role: 'Founder & CEO', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDN3Cli-EgrGqlWIYGbXfq_sr_IecIE3F8MeuhvpxyXpWtUE3SYuyvHoCOOubSkWApWa5WEFtw9Jg6YVooaeoknUmMpXzaHXCZD-HCSX4JKLiv-Ku3SN5y0CKiptpD1UPFureej8N3tsHq3DxT4PVuBOFrHnwqkV0BerDfqs6NxOse0eELGdiCUKLwM3gevXjJ4Q1QfK2U7_xZUXhZlrC5-W1bN63yX5NT5lBqaBYIYKqwkBckW6_MbKyc_WYMSUKzLhPNdwrEMkzo', span: 'md:col-span-2 md:row-span-2' },
+    { name: 'Sarah Drasner', role: 'CTO', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDRaD-ulnVfgvzZsAe_f_2UZGkrWgIfXpo-spOeXzrlOl5O0i4iAga7mg1YKl2kgA5-aqpW9eXGfVdm3bV5DB62R_ZheErLYxbORqftG3tMH5BFx6f3c8gNdv5VTdsbysm4tHYxOx1tvWW6If5Jbu9TI9_s-LXMc3FEPJGBbofqEq38xb9MkA-pZ71kNBViSqZ90G54cai9w6Wwo_iktBw90eYPcjcRYGcs_GkR1uyC0mnASsbrc3DjdaOXAnQSQc5CEdMDXB_6Mw0', span: '' },
+    { name: 'Leo Martinez', role: 'Head of Design', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA_5KnCFNYV7oSqKd4uou8T5BsuoUp7ttK6z2czhPi9SGEPjsSSoa2aqZ0Mr8YCNjZ-YeGxE3iX2un1Uj853PtZdqJd0rb7aG6CL8RZezej2N0ZcTdEzPHTY8GyiaBB6fWArRBpPzbsj1cdtOfzesL1wmXBwbKp4f-z0jZnQGIoVu8WznmoXSCJztwWJ1m2v4FKSamty5fgnlzcpfEmVQd01pmBIXCzIif6MbSFqJDvsNRNID0r1WjMBxRovMzG7P9b_sc9am7NmlQ', span: '' },
+    { name: 'Amina Okafor', role: 'Chief Financial Analyst', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBl99BBV_Q7lKnnYuAWs5JkJFboi-ZuvTxRv4ZrFHyF5WCV6Oo95sPj2FKE_tVKK1j-6qhbv1ecEQv-0fxjKSfdWP8ZgYSeNm3r79WWshxD6KkEltAVksehaZKZPF7yu-AC0cG1KE2H7jdR8Q60iS_wjMh14aek6ztyq1uaZLGsWd_pw7j_L_RsGABxjaJsqKltcYybHbxNFjrY5JBgTUn4dKxgRKEwNfCyi7Dxr8PTX_oFHYzmw2MUWs8rHyIon9fsfsQIXEVZUqk', span: '' },
+    { name: 'David Kim', role: 'VP of Engineering', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3m3kom7fR3fdlA2Kf6OJXv3xGW7T3vtkgCLIsjD5y_rgwVwQ0OB2m7zYcnGRDTtBDChN9W1hyIT-xYkOqeFeitTwW7uH9c399rtgh0XAJlvWXx8o_58k6xe6Rwa4gtPZ8qjhtXG-ZdbDLaZW8be6S8Drc_uOEOJk_C3Uoj9Rv4lLd1z0OT2LynUhq4pQZBxHVdUtqZbUuJ01JlikTDyUwIzlv2A3euyhGA8icfWFMUdxsGw8OiuLxLY4aiRzpqDXsjISOHVveeA4', span: '' },
+  ];
+
   return (
-    <div className="min-h-screen text-white">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-3xl mx-auto mb-16"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Welcome to{' '}
-            <span className="bg-gradient-to-r from-teal-500 to-teal-300 bg-clip-text text-transparent">
-              OnlyBills
-            </span>
-          </h1>
-          <p className="text-xl text-gray-400 mb-8">
-            Your all-in-one solution for smart bill management, expense splitting, and financial guidance
-          </p>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            className="bg-orange-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-orange-600 transition-colors inline-flex items-center gap-2"
-          >
-            Get Started <ArrowRight className="h-5 w-5" />
-          </motion.button>
-        </motion.div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          <StatCard number="50K+" label="Active Users" />
-          <StatCard number="$2M+" label="Bills Processed" />
-          <StatCard number="98%" label="Accuracy Rate" />
-          <StatCard number="24/7" label="Support" />
+    <div>
+      <section className="relative w-full h-[614px] flex items-center justify-center overflow-hidden">
+        <img
+          alt="Simplifying finance background"
+          className="absolute inset-0 w-full h-full object-cover"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGmHLYXfeAb3AoZiv09RN1KZYKTrsv4JWZQ41mIHNiaTXRAegui76eC212qB3-9aOVxAKXYSVll65kF-F3msseogF_Saphd0x70vgIyoEkBZmFCF1Xng84U9VMWxGKM8es_arUUG8q2crDUlOyyZqvTUEuEsKfYCFHIMee6HbyicmCluyD_xGvGGWGO1C2WoYoOH2yuOUn8tn7Ps2MWWt4gsBaQt8yk-wLL6fTRmKHJtWfNl5Zfk4KzH2wdicixOpQhHJrmj4HbHQ"
+        />
+        <div className="absolute inset-0 bg-primary/20 backdrop-brightness-75" />
+        <div className="relative z-10 text-center max-w-3xl px-gutter">
+          <span className="text-label-md font-label-md text-secondary-container tracking-widest uppercase mb-sm block">Our Mission</span>
+          <h1 className="text-headline-lg-mobile md:text-headline-lg font-headline-lg text-on-primary mb-md">Simplifying finance for everyone</h1>
+          <p className="text-body-lg font-body-lg text-on-primary/90">We believe that financial independence starts with clarity. Our platform transforms complex bill management into a seamless, automated experience that grows with you.</p>
         </div>
+      </section>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <FeatureCard
-            icon={Zap}
-            title="Bill Prediction"
-            description="Advanced AI algorithms to predict your electricity bills with remarkable accuracy, helping you plan ahead."
-          />
-          <FeatureCard
-            icon={Users}
-            title="Split Bills"
-            description="Effortlessly split expenses among friends and roommates with our intuitive bill-sharing features."
-          />
-          <FeatureCard
-            icon={Bot}
-            title="GORA - AI Assistant"
-            description="Meet GORA, your personal financial advisor providing smart insights and recommendations 24/7."
-          />
-          <FeatureCard
-            icon={PieChart}
-            title="Budget Planner"
-            description="Comprehensive tools to plan, track, and optimize your monthly budget with visual insights."
-          />
-          <FeatureCard
-            icon={Shield}
-            title="Secure Platform"
-            description="Bank-grade encryption and security measures to keep your financial data safe and protected."
-          />
-          <FeatureCard
-            icon={Clock}
-            title="Bill Reminders"
-            description="Never miss a payment with smart notifications and automated payment reminders."
-          />
+      <section className="py-xl px-gutter max-w-container-max mx-auto w-full">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-lg gap-md">
+          <div className="max-w-xl">
+            <h2 className="text-headline-md font-headline-md text-on-surface mb-xs">The Only Bills Edge</h2>
+            <p className="text-body-md font-body-md text-on-surface-variant">Experience a smarter way to manage your capital with features designed for the modern user.</p>
+          </div>
+          <div className="h-px flex-grow bg-outline-variant mb-4 hidden md:block" />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+          {features.map((f) => (
+            <div key={f.title} className="p-md bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-all group">
+              <div className="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center mb-md group-hover:bg-secondary-container transition-colors">
+                <span className="material-symbols-outlined text-primary group-hover:text-on-secondary-container">{f.icon}</span>
+              </div>
+              <h3 className="text-headline-sm font-headline-sm text-on-surface mb-sm">{f.title}</h3>
+              <p className="text-body-sm font-body-sm text-on-surface-variant">{f.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {/* Mission Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
-          <p className="text-gray-400 mb-8">
-            At OnlyBills, we're passionate about making financial management accessible and stress-free for everyone. 
-            Our platform combines cutting-edge technology with user-friendly design to help you take control of your finances.
-          </p>
-          <div className="bg-gray-800/40 rounded-xl p-8 border border-gray-700/30">
-            <img 
-              src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80" 
-              alt="Team collaboration" 
-              className="rounded-lg mb-6 w-full h-64 object-cover"
-            />
-            <p className="text-gray-400 italic">
-              "We believe that managing bills and expenses shouldn't be a hassle. Our goal is to empower users with smart tools and insights for better financial decisions."
-            </p>
+      <section className="py-xl bg-surface-container-low px-gutter">
+        <div className="max-w-container-max mx-auto w-full">
+          <div className="text-center mb-lg">
+            <h2 className="text-headline-md font-headline-md text-on-surface">Meet the Visionaries</h2>
+            <p className="text-body-md font-body-md text-on-surface-variant max-w-2xl mx-auto">A diverse group of fintech experts and engineers committed to democratizing financial wellness.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-md">
+            {team.map((m) => (
+              <div key={m.name} className={`${m.span} bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden group`}>
+                <div className={m.span ? 'h-full' : 'h-64'}>
+                  <img alt={m.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src={m.img} />
+                </div>
+                {!m.span && (
+                  <div className="absolute bottom-0 left-0 right-0 p-lg bg-gradient-to-t from-black/80 to-transparent hidden">
+                    <h4 className="text-headline-sm font-headline-sm text-on-primary">{m.name}</h4>
+                    <p className="text-label-md font-label-md text-secondary-fixed">{m.role}</p>
+                  </div>
+                )}
+                {!m.span && (
+                  <div className="p-md">
+                    <h4 className="text-label-md font-label-md text-on-surface">{m.name}</h4>
+                    <p className="text-body-sm font-body-sm text-on-surface-variant">{m.role}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="md:col-span-2 md:row-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden relative group">
+              <img alt="CEO Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src={team[0].img} />
+              <div className="absolute bottom-0 left-0 right-0 p-lg bg-gradient-to-t from-black/80 to-transparent">
+                <h4 className="text-headline-sm font-headline-sm text-on-primary">{team[0].name}</h4>
+                <p className="text-label-md font-label-md text-secondary-fixed">{team[0].role}</p>
+              </div>
+            </div>
+            {team.slice(1).map((m) => (
+              <div key={m.name} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden group">
+                <div className="h-64 overflow-hidden">
+                  <img alt={m.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" src={m.img} />
+                </div>
+                <div className="p-md">
+                  <h4 className="text-label-md font-label-md text-on-surface">{m.name}</h4>
+                  <p className="text-body-sm font-body-sm text-on-surface-variant">{m.role}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Technology Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8">Powered by Advanced Technology</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-700/30">
-              <h3 className="text-xl font-semibold mb-3 text-orange-500">AI & Machine Learning</h3>
-              <p className="text-gray-400">State-of-the-art algorithms for accurate bill predictions and personalized insights.</p>
-            </div>
-            <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-700/30">
-              <h3 className="text-xl font-semibold mb-3 text-orange-500">Real-time Processing</h3>
-              <p className="text-gray-400">Instant bill splitting calculations and immediate expense tracking updates.</p>
-            </div>
-            <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-700/30">
-              <h3 className="text-xl font-semibold mb-3 text-orange-500">Cloud Infrastructure</h3>
-              <p className="text-gray-400">Reliable and scalable cloud-based system for seamless performance.</p>
-            </div>
+      <section className="py-xl px-gutter max-w-container-max mx-auto w-full text-center">
+        <div className="glass-panel p-lg rounded-xl border border-outline-variant flex flex-col items-center gap-md">
+          <h2 className="text-headline-md font-headline-md text-on-surface">Ready for clarity?</h2>
+          <p className="text-body-md font-body-md text-on-surface-variant max-w-xl">Join over 50,000 individuals who have simplified their financial lives with Only Bills.</p>
+          <div className="flex gap-md">
+            <button className="px-lg py-sm bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity active:scale-95">Get Started Free</button>
+            <button className="px-lg py-sm border border-outline text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-95">Book a Demo</button>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-gray-800/50 border-t border-gray-700/30">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">OnlyBills</h3>
-              <p className="text-gray-400">Making financial management simple and efficient for everyone.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>Features</li>
-                <li>Pricing</li>
-                <li>Integration</li>
-                <li>Documentation</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>About Us</li>
-                <li>Careers</li>
-                <li>Blog</li>
-                <li>Contact</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
-                <li>Security</li>
-                <li>Compliance</li>
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-700/30">
-            <p className="text-gray-400 mb-4 md:mb-0">© 2024 OnlyBills. All rights reserved.</p>
-            <div className="flex space-x-6">
-              <Github className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer" />
-              <Twitter className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer" />
-              <Linkedin className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer" />
-              <Mail className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </footer>
+      </section>
     </div>
   );
 }

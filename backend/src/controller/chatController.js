@@ -14,12 +14,14 @@ const chatWithGroq = async (req, res) => {
       content: m.content,
     }));
 
+    const systemMsg = { role: 'system', content: 'You are Billy, a concise Indian financial assistant. Always use ₹ for Indian Rupees. Keep responses short and practical. No greetings, no fluff.' };
     const completion = await groq.chat.completions.create({
-      messages: groqMessages,
+      messages: [systemMsg, ...groqMessages],
       model: 'llama-3.3-70b-versatile',
     });
 
-    const reply = completion.choices[0]?.message?.content || "Sorry, I didn't get that.";
+    let reply = completion.choices[0]?.message?.content || "Sorry, I didn't get that.";
+    reply = reply.replaceAll('$', '₹');
     res.json({ reply });
   } catch (error) {
     console.error('Groq chat error:', error);

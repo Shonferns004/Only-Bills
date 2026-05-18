@@ -8,11 +8,10 @@ import Planner from './components/Planner';
 import { getLocalStorage } from './services/Storage';
 import Layout from './components/Layout';
 import BillSplitter from './components/Splitter';
-import GeminiBot from './components/AI';
 import Dashboard from './components/Dashboard';
 import Predict from './components/Predict';
 import About from './components/About';
-
+import Transactions from './components/Transactions';
 
 const PrivateRoute = ({ children }) => {
   const [loading, setLoading] = React.useState(true);
@@ -33,35 +32,31 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
-
-
-
 function App() {
   return (
     <Router>
-      
-        <ToastContainer className="z-55"/>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/*"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <Routes>
-                    <Route path="/home" element={<Dashboard />} />
-                    <Route path="/plan" element={<Planner />} />
-                    <Route path="/split" element={<BillSplitter />} />
-                    <Route path="/ai" element={<GeminiBot />} />
-                    <Route path="/elec" element={<Predict />} />
-                    <Route path="/about" element={<About />} />
-                  </Routes>
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-        </Routes>
+      <ToastContainer className="z-55"/>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/*"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Routes>
+                  <Route path="/home" element={<Dashboard />} />
+                  <Route path="/plan" element={<Planner />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/split" element={<BillSplitter />} />
+                  <Route path="/elec" element={<Predict />} />
+                  <Route path="/about" element={<About />} />
+                </Routes>
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
 }

@@ -237,5 +237,17 @@ export const saveTransaction = async (req, res) => {
   } catch (error) {
     console.error('Error saving transaction:', error);
     res.status(500).json({ error: 'Failed to save transaction' });
+    }
+  };
+
+export const deleteTransaction = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    res.status(500).json({ error: 'Failed to delete transaction' });
   }
 };

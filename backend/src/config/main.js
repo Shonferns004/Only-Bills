@@ -39,23 +39,23 @@ export function calculateBudget(data) {
 
 export async function getGroqAdvice(income, numFamilyMembers, numChildren, maritalStatus, budget) {
     const budgetLines = Object.entries(budget)
-      .map(([category, amount]) => `${category}: $${amount.toFixed(2)}`)
+      .map(([category, amount]) => `${category}: ₹${amount.toFixed(2)}`)
       .join('\n');
   
     const prompt = `
-  I'm planning a monthly budget. Here are my details:
+  I'm planning a monthly budget in India. Here are my details:
   
-  - Monthly Income: $${income.toFixed(2)}
+  - Monthly Income: ₹${income.toFixed(2)}
   - Family Members: ${numFamilyMembers}
   - Marital Status: ${maritalStatus}
   - Number of Children: ${numChildren}
   - Budget Breakdown:
   ${budgetLines}
   
-  Please analyze this and provide personalized financial advice:
-  - Highlight if I'm overspending or under-allocating.
-  - Give suggestions for improvement specific to being ${maritalStatus.toLowerCase()} with ${numChildren} children.
-  - Be supportive, friendly, and practical.
+  Give concise, practical financial advice in 2-3 short paragraphs. Use ₹ for Indian Rupees. Be direct and actionable. No greetings, no fluff.
+  - Highlight overspending or under-allocating areas.
+  - Give specific suggestions for a ${maritalStatus.toLowerCase()} person with ${numChildren} children.
+  - End with one sentence of encouragement.
   `;
   
     const completion = await getGroq().chat.completions.create({
@@ -63,5 +63,7 @@ export async function getGroqAdvice(income, numFamilyMembers, numChildren, marit
       model: 'llama-3.3-70b-versatile',
     });
   
-    return completion.choices[0].message.content;
+    let advice = completion.choices[0].message.content;
+    advice = advice.replaceAll('$', '₹');
+    return advice;
   }
