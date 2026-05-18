@@ -133,7 +133,20 @@ function BillSplitter() {
               <span className="material-symbols-outlined text-secondary">sync_alt</span>
             </div>
             <div className="flex flex-col gap-md">
-              {history.length === 0 ? (
+              {loadingHistory ? (
+                [1,2,3].map(i => (
+                  <div key={i} className="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-outline-variant/30">
+                    <div className="flex items-center gap-sm">
+                      <div className="skeleton h-10 w-10 rounded-full" />
+                      <div>
+                        <div className="skeleton h-4 w-24 mb-1" />
+                        <div className="skeleton h-3 w-16" />
+                      </div>
+                    </div>
+                    <div className="skeleton h-4 w-16" />
+                  </div>
+                ))
+              ) : history.length === 0 ? (
                 <p className="text-body-sm font-body-sm text-on-surface-variant text-center py-4">No splits yet. Use the calculator to create one.</p>
               ) : history.slice(0, 3).map((h, i) => (
                 <div key={h.id || i} className="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-outline-variant/30">
@@ -160,7 +173,21 @@ function BillSplitter() {
             </div>
           </div>
 
-          {history.length === 0 ? (
+          {loadingHistory ? (
+            [1,2,3].map(i => (
+              <div key={i} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col md:flex-row items-start md:items-center gap-md shadow-sm">
+                <div className="skeleton h-16 w-16 rounded-xl shrink-0" />
+                <div className="flex-grow">
+                  <div className="skeleton h-5 w-32 mb-1" />
+                  <div className="skeleton h-4 w-48" />
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="skeleton h-5 w-20 mb-1" />
+                  <div className="skeleton h-3 w-16" />
+                </div>
+              </div>
+            ))
+          ) : history.length === 0 ? (
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-center justify-center h-32 shadow-sm">
               <p className="text-body-sm font-body-sm text-on-surface-variant">No split history yet</p>
             </div>
@@ -197,7 +224,20 @@ function BillSplitter() {
             </div>
           </div>
 
-          {history.length > 0 && (
+          {loadingHistory ? (
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+              <div className="skeleton h-6 w-32 mb-md" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1,2,3].map(i => (
+                  <div key={i} className="bg-surface-container-low rounded-lg p-md border border-outline-variant">
+                    <div className="skeleton h-5 w-24 mb-1" />
+                    <div className="skeleton h-4 w-32 mb-1" />
+                    <div className="skeleton h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : history.length > 0 && (
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
               <h3 className="text-headline-sm font-headline-sm mb-md">Split History</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

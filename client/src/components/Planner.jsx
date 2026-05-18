@@ -294,7 +294,20 @@ function Planner() {
             </div>
           </div>
 
-          {history.length > 0 && (
+          {loadingHistory ? (
+            <div className="mt-xl bg-surface-container-lowest border border-outline-variant rounded-xl p-md card-shadow">
+              <div className="skeleton h-6 w-40 mb-md" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1,2,3].map(i => (
+                  <div key={i} className="bg-surface-container-low rounded-lg p-md border border-outline-variant">
+                    <div className="skeleton h-5 w-24 mb-1" />
+                    <div className="skeleton h-4 w-32 mb-1" />
+                    <div className="skeleton h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : history.length > 0 && (
             <div className="mt-xl bg-surface-container-lowest border border-outline-variant rounded-xl p-md card-shadow">
               <h3 className="text-headline-sm font-headline-sm mb-md">Budget History</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

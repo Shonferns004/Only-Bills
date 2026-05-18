@@ -225,7 +225,20 @@ function Predict() {
             </div>
           </div>
 
-          {history.length > 0 && (
+          {loadingHistory ? (
+            <div className="lg:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl p-md card-shadow">
+              <div className="skeleton h-6 w-48 mb-md" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1,2,3].map(i => (
+                  <div key={i} className="bg-surface-container-low rounded-lg p-md border border-outline-variant">
+                    <div className="skeleton h-6 w-24 mb-2" />
+                    <div className="skeleton h-4 w-32" />
+                    <div className="skeleton h-4 w-20 mt-1" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : history.length > 0 && (
             <div className="lg:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl p-md card-shadow">
               <h3 className="text-headline-sm font-headline-sm mb-md">Prediction History</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

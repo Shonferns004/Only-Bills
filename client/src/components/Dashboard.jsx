@@ -121,7 +121,7 @@ function Dashboard() {
           <div>
             <span className="text-label-md font-label-md text-on-surface-variant">Total Balance</span>
             <h2 className="text-headline-lg font-headline-lg text-primary mt-xs">
-              {loading ? '---' : `₹${stats.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              {loading ? <div className="skeleton h-8 w-32" /> : `₹${stats.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             </h2>
           </div>
           <div className="flex justify-between items-end mt-lg">
@@ -140,13 +140,13 @@ function Dashboard() {
           <div>
             <span className="text-label-md font-label-md text-on-surface-variant">Upcoming Bills (7 Days)</span>
             <h2 className="text-headline-lg font-headline-lg text-error mt-xs">
-              {loading ? '---' : `₹${stats.upcomingTotal.toFixed(2)}`}
+              {loading ? <div className="skeleton h-8 w-24" /> : `₹${stats.upcomingTotal.toFixed(2)}`}
             </h2>
           </div>
           <div className="mt-lg flex items-center gap-xs text-on-surface-variant">
             <span className="material-symbols-outlined text-body-sm">event</span>
             <span className="text-body-sm font-body-sm">
-              {loading ? 'Loading...' : `${txs.filter(t => {
+              {loading ? <div className="skeleton h-4 w-32" /> : `${txs.filter(t => {
                 if (!t.date) return false;
                 const d = new Date(t.date);
                 const now = new Date();
@@ -162,7 +162,7 @@ function Dashboard() {
           <div>
             <span className="text-label-md font-label-md text-on-surface-variant">Monthly Spending</span>
             <h2 className="text-headline-lg font-headline-lg text-primary mt-xs">
-              {loading ? '---' : `₹${stats.monthlySpending.toFixed(2)}`}
+              {loading ? <div className="skeleton h-8 w-28" /> : `₹${stats.monthlySpending.toFixed(2)}`}
             </h2>
           </div>
           <div className="flex justify-between items-end mt-lg">

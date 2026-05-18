@@ -81,3 +81,55 @@ export const login = async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 };
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { email, displayName, googleId } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id, email, display_name')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existing) {
+      return res.json({
+        user: {
+          id: existing.id,
+          email: existing.email,
+          displayName: existing.display_name,
+        },
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        email,
+        display_name: displayName || email?.split('@')[0],
+        google_id: googleId,
+      })
+      .select('id, email, display_name')
+      .single();
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return res.status(500).json({ error: 'Google signup failed' });
+    }
+
+    res.status(201).json({
+      user: {
+        id: data.id,
+        email: data.email,
+        displayName: data.display_name,
+      },
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};

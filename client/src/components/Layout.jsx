@@ -160,7 +160,7 @@ const Layout = ({ children }) => {
             </button>
             <div className="relative hidden md:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-              <input className="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-label-md focus:outline-none focus:border-primary w-64 transition-all" placeholder="Search bills or analytics..." type="text" />
+              <input className="pl-10 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-label-sm md:text-label-md focus:outline-none focus:border-primary w-40 md:w-64 transition-all" placeholder="Search bills or analytics..." type="text" />
             </div>
           </div>
           <div className="flex items-center gap-sm">

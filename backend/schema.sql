@@ -1,10 +1,14 @@
 -- Run this SQL in your Supabase SQL Editor (https://supabase.com/dashboard/project/_/sql/new)
+-- If you already have a users table, run this migration first:
+-- ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
 
 CREATE TABLE users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,
   display_name TEXT NOT NULL,
+  google_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

@@ -11,6 +11,7 @@ import BillSplitter from './components/Splitter';
 import Dashboard from './components/Dashboard';
 import Predict from './components/Predict';
 import About from './components/About';
+import AuthCallback from './components/AuthCallback';
 import Transactions from './components/Transactions';
 
 const PrivateRoute = ({ children }) => {
@@ -26,7 +27,17 @@ const PrivateRoute = ({ children }) => {
     checkAuth();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 w-full max-w-sm px-4">
+        <div className="skeleton h-8 w-48" />
+        <div className="skeleton h-4 w-64" />
+        <div className="skeleton h-12 w-full mt-4" />
+        <div className="skeleton h-12 w-full" />
+        <div className="skeleton h-12 w-full" />
+      </div>
+    </div>
+  );
   if (!authorized) return <Navigate to="/login" replace />;
 
   return children;
@@ -46,6 +57,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route
           path="/*"
           element={
